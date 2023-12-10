@@ -1,3 +1,4 @@
 # Quick-select
-In order to import the MPI julia library to be able to run my code you need to launch the julia terminal and then run:
+In order for the program to run the MPI julia library needs to be imported and mpiexecjl needs to be installed. After launching the julia terminal type:
 > import Pkg; Pkg.add("MPI")
+> using MPI; MPI.install_mpiexecjl()
