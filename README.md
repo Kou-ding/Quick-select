@@ -8,9 +8,10 @@ In this assignment we have to find the k-th value of an array, considering the a
 - quick-select-easy.jl
 
 Julia sorts the array and then returns the k-th element by printing the k-th element of the sorted array.
-    sorted_A=sort(A)
-    println("The element number $k of the sorted array is: $(sorted_A[k])")
-
+```julia
+sorted_A=sort(A)
+println("The element number $k of the sorted array is: $(sorted_A[k])")
+```
 
 ## Quick select sequential
 - quick-select-seq.jl
