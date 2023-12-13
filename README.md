@@ -16,7 +16,7 @@ println("The element number $k of the sorted array is: $(sorted_A[k])")
 ## Quick select sequential
 - quick-select-seq.jl
 
-This algorithm revolves around creating a random ==pivot== point somewhere inside the array and using it to seperate the array into two parts. The first part of the array contains only elements that are smaller than the pivot point and the second part contains elements equal or bigger than the pivot point. 
+This algorithm revolves around creating a random `pivot` point somewhere inside the array and using it to seperate the array into two parts. The first part of the array contains only elements that are smaller than the pivot point and the second part contains elements equal or bigger than the pivot point. 
 ![two parts](/media/quick-select.png)
 
 After having two pointers traverse the array, one from the start and one from the end, whenever they each come in contact with an element that should be on the opposite side the swap values and continue doing that until they have met each other. 
