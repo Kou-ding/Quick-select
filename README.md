@@ -98,9 +98,9 @@ Now bigger again:
                   o o ■ | ■ ■ ■ ■ ■ |
 
 Now bigger again:
-                        new pivot deluxe plus
-                                ↓
-                        o o o | ■ ■ |  
+                     new pivot deluxe plus
+                              ↓
+                        o o o ■ | ■ |  
 
 Now bigger again:
                             Value found!
