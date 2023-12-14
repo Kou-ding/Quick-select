@@ -115,18 +115,18 @@ This has been a quick visual representation of the program's steps.
 
 ## Times
 Execution times mean, Array:
-|qs-easy|qs-seq|qs-mpi| 
-|-------|------|------|
-||||
-||||
-||||
-||||
-||||
-|Mean score|Mean score|Mean score|
-||||
+|qs-easy|qs-seq|qs-mpi|qs-threads|
+|-------|------|------|----------|
+|||||
+|||||
+|||||
+|||||
+|||||
+|Mean score|Mean score|Mean score|Mean score|
+|||||
 
 ## Tutorial
-First things first, you have to create a list file by executing:
+First things first, you have to create a list txt file by executing:
 
 ```bash
 julia create_list.jl
@@ -147,7 +147,7 @@ import Pkg; Pkg.add("MPI")
 using MPI; MPI.install_mpiexecjl()
 ```
 
-Then exit the julia terminal by ctr-D and run the following command inside the repository folder. Now, a good practice is to add mpiexecjl to the system path but you can also, alternatively, type the whole address. Eg:
+Then exit the julia terminal by typing ctr-D. Now, a good practice is to add mpiexecjl to the system path but you can also, alternatively, type the whole address. Run the following command inside the repository's folder:
 
 ```bash
 # if mpiexecjl is NOT in the path
@@ -157,6 +157,8 @@ mpiexecjl -n 2 julia quick-select-mpi.jl
 
 ```
 The number that comes after -n is the number of ranks and you are able to configure it freely when calling the program.
+
+>if at any time you have any questions feel free to message me **Ü**
 
 
 External sources
