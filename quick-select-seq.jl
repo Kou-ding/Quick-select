@@ -65,11 +65,7 @@ elapsed_time = @elapsed begin
         elseif(A[j]>=A[1])
             if(j==1)
                 pivot=j
-            end
-            if(j==2)
-                pivot=j-1
-            end
-            if(j>=2)
+            elseif(j>=2)
                 pivot=j-1
                 swap_elements!(A,pivot,1)
             end

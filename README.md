@@ -23,10 +23,19 @@ This algorithm revolves around creating a random `pivot` point somewhere inside 
 
 After having two pointers traverse the array, one from the start and one from the end, whenever they each come in contact with an element that should be on the opposite side the swap values and continue doing that until they have met each other. 
 <pre>
-After this procedure the array should always look like:
-              
-      ↓                        ↓
+Both i and j have encountered an element on the wrong side.
+
+      i                         j
+      ↓                         ↓
 o o o ■ o ■ ■ o o o ■ o o ■ ■ ■ o ■ ■ ■ ■ ■ 
+
+So, they swap
+
+      i                         j
+      ↓                         ↓
+o o o o o ■ ■ o o o ■ o o ■ ■ ■ ■ ■ ■ ■ ■ ■ 
+
+and continue parsing the array from both sides.
 </pre>
 
 In the start of the algorithm the pivot swaps its value with the first element of the array so that it can be stored inside the A[1], out of the way, and when, finally, the partitioning is done we assign the pivot to equal a position relative to i and j, since the two of them overlap, with which we perform a swap between the pivot and the A[1]. The logical proof behind the correct allocation of the pivot position goes as follows:
@@ -47,18 +56,18 @@ d. o o | Here i moves to j's position
 
 <pre>
 All in all, the end state is described by:
-1| o ■ ← (i,j)  | 
-2| ? ■ ← (i,j) ■|
-3| o o ← (i,j) ?|
-p.s.: ? symbolizes an element that we dont know if it exists or not
+1| o ■ ← (i,j)  |
+2| ? ■ ← (i,j) ■| if '?' exists it is 'o'
+3| o o ← (i,j) ?| if '?' exists it is '■'
+p.s.: '?' symbolizes an element that we dont know if it exists or not
 </pre>
 
-- In case 1 we assign pivot to the element before i,j and swap its value with A[1].
-- In case 2 we assign pivot to the element before i,j and if (i,j)!= 2 then we also swap its value with A[1]. 
+- In case 1 we assign pivot to the element before i,j and swap its value with `A[1]`.
+- In case 2 we assign pivot to the element before i,j and if `(i,j)!= 2` then we also swap its value with `A[1]`. 
 - In case 3 we assign pivot to (i,j).
 - In the extreme cases where the array is smaller than 3 elements in size:
-    - If they are 2 then i==j so we dont need to change any elements position
-    - Having only one element leads to i>j so the while loop doesnt run and the pivot==k
+    - If they are 2 then `i==j` so we dont need to change any elements position
+    - Having only one element leads to `i>j` so the while loop doesnt run and the `pivot==k`
 
 <pre>
 After this procedure the array should always look like:
@@ -67,11 +76,39 @@ After this procedure the array should always look like:
 o o o o o o o o ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ 
 </pre>
 
-Finding the k-th value occurs when our randomly assigned pointer overlaps with the position of the k-th value of the sorted array. The way we are able to tell if this criteria is met is by counting how many elements are bigger than and smaller than our pivot. In other words, the pivot gets assigned its absolute sorted position each time the program sorts the array into those two parts. If pivot==k we are done. 
-![pivot==k]()
-
+Finding the k-th value occurs when our randomly assigned pointer overlaps with the position of the k-th value of the sorted array. The way we are able to tell if this criteria is met is by counting how many elements are bigger than and smaller than our pivot. In other words, the pivot gets assigned its absolute sorted position (meaning: correct position in a sorted array) each time the program sorts the array into those two parts. If pivot==k we are done. 
 If we don't get lucky we rise our chances by reducing the array to either the first or the second part depending on if k is bigger than the number of the elements that are less than the pivot. If it is bigger then the search is continues on the second part of the array but if it is smaller it continues on the first part. This way we progressively shorten the part of the array that we work on and rise our chances of the pivot overlapping with k. 
-![recursion]() 
+
+<pre>
+Lets say it is bigger than the pivot:
+
+               pivot      (keep this)
+                ↓              ↓ 
+o o o o o o o o ■ | ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ |
+
+Lets say now it's smaller than the new pivot:
+
+                     (keep this)  new pivot
+                          ↓           ↓
+                  | o o o o o o o o | ■ ■ ■ ■ ■
+
+Now bigger again:
+               new pivot deluxe
+                      ↓
+                  o o ■ | ■ ■ ■ ■ ■ |
+
+Now bigger again:
+                        new pivot deluxe plus
+                                ↓
+                        o o o | ■ ■ |  
+
+Now bigger again:
+                            Value found!
+                                  ↓
+                                  ■
+
+This has been a quick visual representation of the program's steps.
+</pre>
 
 ## Quick select mpi
 
