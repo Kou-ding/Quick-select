@@ -3,27 +3,6 @@ function swap_elements!(arr, i, j)
     arr[i], arr[j] = arr[j], arr[i]
 end
 
-# Create a txt file with a random integer each line
-function create_list()
-    file = nothing  # Initialize file outside the try block
-    try
-        file_path = "list.txt"  # Change this to your desired file path
-        file = open(file_path, "w")
-
-        for i in 1:20
-            random_number = rand(1:100)
-            println(file, random_number)
-        end
-
-        println("Random numbers have been written to $file_path.")
-
-    catch e
-        println("Error: $e")
-    finally
-        close(file)
-    end
-end
-
 # Initialize the array A[]
 function init_array()
     # Initialize array
@@ -40,8 +19,7 @@ function init_array()
     end
 end
 
-# Creating a list and immidiately populating an array with its values
-create_list()
+# Populating an array with the list's values
 init_array()
 
 # Prompt to find the value of the k-th element, considering the array is sorted
@@ -84,8 +62,7 @@ elapsed_time = @elapsed begin
         if((A[j]<A[1]))
             pivot=j
             swap_elements!(A,pivot,1)
-        end
-        if(A[j]>=A[1])
+        elseif(A[j]>=A[1])
             if(j==1)
                 pivot=j
             end

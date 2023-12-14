@@ -1,26 +1,33 @@
 # Quick-select-Assignment
 
 ## Homework 2
-In this assignment we have to find the k-th value of an array, considering the array to be sorted. We will be using MPI to coordinate this search and apply this algorithm to datasets that cannot fit into one machine since when the data can fit into one computational machine the program should always run faster when executed locally.
+In this assignment we have to find the k-th value of an array, when considering the array to be sorted. We will be using MPI to coordinate this search and apply this algorithm to datasets that cannot fit into one machine since when the data can fit into one computational machine the program should always run faster when executed locally.
 
 
 ## Quick select easy
 - quick-select-easy.jl
 
 Julia sorts the array and then returns the k-th element by printing the k-th element of the sorted array.
+
 ```julia
 sorted_A=sort(A)
 println("The element number $k of the sorted array is: $(sorted_A[k])")
 ```
 
+
 ## Quick select sequential
 - quick-select-seq.jl
 
-This algorithm revolves around creating a random `pivot` point somewhere inside the array and using it to seperate the array into two parts. The first part of the array contains only elements that are smaller than the pivot point and the second part contains elements equal or bigger than the pivot point. 
+This algorithm revolves around creating a random `pivot` point somewhere inside the array and using it to seperate the array into two parts. The first part of the array contains only elements that are smaller than the pivot point *symblized with 'o'* and the second part contains elements equal or bigger than the pivot point *symblized with '■'*. 
 ![two parts](/media/quick-select.png)
 
 After having two pointers traverse the array, one from the start and one from the end, whenever they each come in contact with an element that should be on the opposite side the swap values and continue doing that until they have met each other. 
-![swap]()
+<pre>
+After this procedure the array should always look like:
+              
+      ↓                        ↓
+o o o ■ o ■ ■ o o o ■ o o ■ ■ ■ o ■ ■ ■ ■ ■ 
+</pre>
 
 In the start of the algorithm the pivot swaps its value with the first element of the array so that it can be stored inside the A[1], out of the way, and when, finally, the partitioning is done we assign the pivot to equal a position relative to i and j, since the two of them overlap, with which we perform a swap between the pivot and the A[1]. The logical proof behind the correct allocation of the pivot position goes as follows:
 
@@ -82,11 +89,38 @@ Execution times mean, Array:
 ||||
 
 ## Tutorial
+First things first, you have to create a list file by executing:
+
+```bash
+julia create_list.jl
+# this is going to prompt you to configure the number 
+# and range of the array's randomly generated elements 
+``` 
+
+After this you run the sequential code by:
+
+```bash
+julia quick-select-seq.jl
+# you have to enter k, to get the k-th value
+``` 
 In order for the program (quick-select-mpi.jl) to run the MPI julia library needs to be imported and mpiexecjl needs to be installed. After launching the julia terminal type:
+
 ```julia
 import Pkg; Pkg.add("MPI")
 using MPI; MPI.install_mpiexecjl()
 ```
+
+Then exit the julia terminal by ctr-D and run the following command inside the repository folder. Now, a good practice is to add mpiexecjl to the system path but you can also, alternatively, type the whole address. Eg:
+
+```bash
+# if mpiexecjl is NOT in the path
+/home/user/julia/julia-1.9.4/bin/mpiexecjl -n 2 julia quick-select-mpi.jl
+# if mpiexecjl is in the path
+mpiexecjl -n 2 julia quick-select-mpi.jl
+
+```
+The number that comes after -n is the number of ranks and you are able to configure it freely when calling the program.
+
 
 External sources
 ----------------
