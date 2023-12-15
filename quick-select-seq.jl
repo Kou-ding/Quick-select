@@ -26,10 +26,6 @@ init_array()
 println("Pick a number out of $(length(A)):")
 k = parse(Int64, readline())
 
-# Find the k-th element for sure by actually sorting the array 
-sorted_A=sort(A)
-println("The correct element number $k of the sorted array is: $(sorted_A[k])")
-
 # Store k inside another variable because we are going to be making changes to it
 searching = k 
 
@@ -59,7 +55,7 @@ elapsed_time = @elapsed begin
         end
 
         # Differentiate based on if the common index, i and j are on, is bigger or smaller than the pivot
-        if((A[j]<A[1]))
+        if(A[j]<A[1])
             pivot=j
             swap_elements!(A,pivot,1)
         elseif(A[j]>=A[1])

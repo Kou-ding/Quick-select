@@ -1,7 +1,7 @@
 # Quick-select-Assignment
 
 ## Homework 2
-In this assignment we have to find the k-th value of an array, when considering the array to be sorted. We will be using MPI to coordinate this search and apply this algorithm to datasets that cannot fit into one machine since when the data can fit into one computational machine the program should always run faster when executed locally.
+In this assignment we have to find the k-th value of an unsorted array, when considering the array to be sorted. We will be using MPI to coordinate this search and apply this algorithm to datasets that cannot fit into one machine since when the data can fit into one computational machine the program should always run faster when executed locally.
 
 
 ## Quick select easy
@@ -113,7 +113,7 @@ This has been a quick visual representation of the program's steps.
 ## Quick select mpi
 
 
-## Times
+## Times & Time Complexity
 Execution times mean, Array:
 |qs-easy|qs-seq|qs-mpi|qs-threads|
 |-------|------|------|----------|
@@ -125,8 +125,22 @@ Execution times mean, Array:
 |Mean score|Mean score|Mean score|Mean score|
 |||||
 
+#### Time complexity
+- quick-select-easy.jl
+      - 
+
+- quick-select-seq.jl
+      - 
+
+- quick-select-mpi.jl
+      - 
+
+- quick-select-threads.jl
+      - 
+
+
 ## Tutorial
-First things first, you have to create a list txt file by executing:
+First things first, you have to create a list (txt file) by executing:
 
 ```bash
 julia create_list.jl
