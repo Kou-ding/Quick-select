@@ -22,16 +22,16 @@ function init_array()
 end
 
 function QuickSortSeq()
-    # Execute this loop forever until k==pivot where the program exits gracefully
-    while(true)
+    # Execute this loop forever until
+    while (true)
         # Set i and j each iteration of the while loop
         i = 1
-        j = length(A)
-        pivot = rand(1:length(A))
-        seperator=A[pivot]
+        j = length(sub_A)
+        pivot = rand(1:length(sub_A))
+        seperator=sub_A[pivot]
 
         # Divide the array into 2 sides
-        while(i<j)
+        while (i<j)
             while ((A[i]<seperator) && (i<j))
                 i += 1
             end
@@ -42,25 +42,29 @@ function QuickSortSeq()
         end
 
         # Differentiate based on if the common index, i and j are on, is bigger or smaller than the pivot
-        if(A[j]<seperator)
+        if (A[j]<seperator)
             seperator_position=j+1
-        elseif(A[j]>=seperator)
+        elseif (A[j]>=seperator)
             seperator_position=j
         end
-
-        # Dealing with the different possibilities of k's relative position to j
-        if(pivot==k)
-            println("The element number $searching of the sorted array is: $(A[pivot])")
+        
+        if (i==j)
+            # less_sub=seperator_position-1
+            more_sub=length(sub_A)-seperator_position
+            MPI.Send(more_sub, 0, 0, comm)
             break
         end
-        if(seperator_position>=k)
-            global A = A[1:(seperator_position-1)] #shrink the array
-        end
-        if(seperator_position<k)
-            global A = A[(seperator_position):end] #shrink the array
-            global k = k-(seperator_position-1) #redefine the position of the k-th element in the emerging
+    end
+end
+
+function k_elements(A)
+    count_eq=0
+    for index in eachindex(A)
+        if A[1]==A[index]
+            count_eq+=1
         end
     end
+    return count_eq == length(A)-1
 end
 
 # Populating an array with the list's values
@@ -91,17 +95,27 @@ if rank == 0
     end
 else
     for i in 1:size-1
-        sub_array[i] = MPI.Recv(0, 0, comm)
-        println("Process $rank received: $A_part")
+        sub_A[i] = MPI.Recv(i, 0, comm)
+        println("Process $rank received: $(sub_A[i])")
     end
 end
 
-if(length(A)==1)
+if rank == 0
+    if (length(A)==1 || k_elements(A))
     println("The element number $searching of the sorted array is: $(A[1])")
-#=else
-    QuickSortSeq()
-}=#
+    else
+        QuickSortSeq()
+    end
 end 
 
+if rank == 0
+    # Root process code...
+else
+    for i in 1:size-1
+        sub_A[i] = MPI.Recv(i, 0, comm)
+        println("Process $rank received: $(sub_A[i])")
+    end
+    QuickSortSeq()
+end
 MPI.Barrier(comm)
 MPI.Finalize()
