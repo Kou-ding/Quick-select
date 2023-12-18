@@ -1,10 +1,5 @@
 using MPI
 
-# This function swaps only the values of A at places i and j without interfering with i and j themselves
-function swap_elements!(arr, i, j)
-    arr[i], arr[j] = arr[j], arr[i]
-end
-
 # Initialize the array A[]
 function init_array()
     # Initialize array
@@ -21,101 +16,67 @@ function init_array()
     end
 end
 
-function QuickSortSeq()
-    # Execute this loop forever until
-    while (true)
-        # Set i and j each iteration of the while loop
-        i = 1
-        j = length(sub_A)
-        pivot = rand(1:length(sub_A))
-        seperator=sub_A[pivot]
-
-        # Divide the array into 2 sides
-        while (i<j)
-            while ((A[i]<seperator) && (i<j))
-                i += 1
-            end
-            while ((A[j]>=seperator) && (i<j))
-                j -= 1
-            end
-            swap_elements!(A,i,j)
-        end
-
-        # Differentiate based on if the common index, i and j are on, is bigger or smaller than the pivot
-        if (A[j]<seperator)
-            seperator_position=j+1
-        elseif (A[j]>=seperator)
-            seperator_position=j
-        end
-        
-        if (i==j)
-            # less_sub=seperator_position-1
-            more_sub=length(sub_A)-seperator_position
-            MPI.Send(more_sub, 0, 0, comm)
-            break
-        end
-    end
-end
-
-function k_elements(A)
-    count_eq=0
-    for index in eachindex(A)
-        if A[1]==A[index]
-            count_eq+=1
-        end
-    end
-    return count_eq == length(A)-1
-end
-
-# Populating an array with the list's values
-init_array()
-
-# Prompt to find the value of the k-th element, considering the array is sorted
-println("Pick a number out of $(length(A)):")
-k = parse(Int64, readline())
-
-# Store k inside another variable because we are going to be making changes to it
-searching = k 
-
 MPI.Init()
 
 comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
-size = MPI.Comm_size(comm)
+comm_size = MPI.Comm_size(comm)
 
-# Assuming the array A is available on the root process
-if rank == 0
-    increment=div(length(A), size)+1
-    start_position=1
-    for i in 1:size-1
-        increment=div(length(A), (size-1))+1
-        end_position=position+increment-1
-        MPI.Send(A[start_position:end_position], i, 0, comm)
-        start_position=i*increment
-    end
+root = 0
+
+if rank == root
+
+    init_array()
+    
+    # Calculate the size of each chunk and the remainder
+    chunk_size = length(A) ÷ size
+    remainder = length(A) % size
+
+    # Prepare a buffer to receive the chunk
+    subArray = Array{typeof(A[1])}(undef, chunk_size + (rank < remainder ? 1 : 0))
+
+    # Scatter the array
+    MPI.Scatter(A, subArray, 0, comm)
+    MPI.Barrier(comm)
+
+    # Prepare a buffer to broadcast the pivot
+    pivot_pos = rand(1:length(A))
+    pivot = A[pivot_pos]
+    pivot_buffer = Array{typeof(pivot)}(undef, 1)
+    pivot_buffer[1] = pivot
+    
+    # Broadcast the pivot
+    MPI.Bcast!(pivot_buffer, 0, comm)
+    MPI.Barrier(comm)
 else
-    for i in 1:size-1
-        sub_A[i] = MPI.Recv(i, 0, comm)
-        println("Process $rank received: $(sub_A[i])")
-    end
+    # these variables can be set to `nothing` on non-root processes
+    pivot_buffer = nothing
 end
 
-if rank == 0
-    if (length(A)==1 || k_elements(A))
-    println("The element number $searching of the sorted array is: $(A[1])")
-    else
-        QuickSortSeq()
-    end
+if rank == root
+    println("Original matrix")
+    println("================")
+    @show A 
+    println()
+    println("Each rank")
+    println("================")
 end 
-
-if rank == 0
-    # Root process code...
-else
-    for i in 1:size-1
-        sub_A[i] = MPI.Recv(i, 0, comm)
-        println("Process $rank received: $(sub_A[i])")
-    end
-    QuickSortSeq()
-end
 MPI.Barrier(comm)
-MPI.Finalize()
+
+local_A = MPI.Scatterv!(A, subArray, root, comm)
+
+for i = 0:comm_size-1
+    if rank == i
+        @show rank local_A
+    end
+    MPI.Barrier(comm)
+end
+
+MPI.Gatherv!(local_A, output, root, comm)
+
+if rank == root
+    println()
+    println("Final matrix")
+    println("================")
+    @show output
+end 
