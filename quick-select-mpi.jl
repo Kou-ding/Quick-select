@@ -1,5 +1,3 @@
-using MPI
-
 # Initialize the array A[]
 function init_array()
     # Initialize array
@@ -16,67 +14,108 @@ function init_array()
     end
 end
 
+# This function swaps only the values of A at places i and j without interfering with i and j themselves
+function swap_elements!(arr, i, j)
+    arr[i], arr[j] = arr[j], arr[i]
+end
+
+# This function divides an array into n subarrays
+function divide_array(A, n)
+    subA = Vector{Vector{Int}}(undef, n)
+    chunk_size = div(length(A), n)
+    
+    for i in 1:n-1
+        subA[i] = A[(i-1)*chunk_size+1 : i*chunk_size]
+    end
+    
+    subA[n] = A[(n-1)*chunk_size+1 : end]
+    
+    return subA
+end
+
+using MPI
+
 MPI.Init()
 
 comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
-comm_size = MPI.Comm_size(comm)
+size = MPI.Comm_size(comm)
 
-root = 0
+# Initialize the array
+init_array()
 
-if rank == root
+# The array that is going to hold the subarrays of A
+subA = divide_array(A, size-1)
 
-    init_array()
-    
-    # Calculate the size of each chunk and the remainder
-    chunk_size = length(A) ÷ size
-    remainder = length(A) % size
-
-    # Prepare a buffer to receive the chunk
-    subArray = Array{typeof(A[1])}(undef, chunk_size + (rank < remainder ? 1 : 0))
-
-    # Scatter the array
-    MPI.Scatter(A, subArray, 0, comm)
-    MPI.Barrier(comm)
-
-    # Prepare a buffer to broadcast the pivot
-    pivot_pos = rand(1:length(A))
-    pivot = A[pivot_pos]
-    pivot_buffer = Array{typeof(pivot)}(undef, 1)
-    pivot_buffer[1] = pivot
-    
-    # Broadcast the pivot
-    MPI.Bcast!(pivot_buffer, 0, comm)
-    MPI.Barrier(comm)
+if rank == 0
+    for i in 1:size-1
+        MPI.Isend(subA[i], i, i*10, comm)
+    end
 else
-    # these variables can be set to `nothing` on non-root processes
-    pivot_buffer = nothing
+    for i in 1:size-1
+        subA[i] = zeros(Int, length(subA[i]))
+        MPI.Irecv!(subA[i], 0, i*10, comm)
+    end
 end
 
-if rank == root
-    println("Original matrix")
-    println("================")
-    @show A 
-    println()
-    println("Each rank")
-    println("================")
-end 
+# Wait for all processes to finish
 MPI.Barrier(comm)
 
-local_A = MPI.Scatterv!(A, subArray, root, comm)
+for rank in 1:size-1
+    while (true)
+        # Set i and j each iteration of the while loop
+        i = 1
+        j = length(subA[rank])
+        pivot = 7
 
-for i = 0:comm_size-1
-    if rank == i
-        @show rank local_A
+        # Divide the array into 2 sides
+        while (i<j)
+            while ((subA[rank][i]<pivot) && (i<j))
+                i += 1
+            end
+            while ((subA[rank][j]>=pivot) && (i<j))
+                j -= 1
+            end
+            swap_elements!(subA[rank],i,j)
+        end
+
+        # Differentiate based on if the common index, i and j are on, is bigger or smaller than the pivot
+        if (subA[rank][j]<pivot)
+            pivot_position=j+1
+        elseif (subA[rank][j]>=pivot)
+            pivot_position=j
+        end
+        
+        if (i==j)
+            global lessLen = pivot_position - 1
+            moreLen = length(subA[rank]) - lessLen
+            break
+        end
     end
-    MPI.Barrier(comm)
 end
 
-MPI.Gatherv!(local_A, output, root, comm)
+##########################
+# Wait for all processes to finish
+MPI.Barrier(comm)
 
-if rank == root
-    println()
-    println("Final matrix")
-    println("================")
-    @show output
-end 
+totalLessLen = [0]
+# Reduce all lessLen values to totalLessLen in process 0
+MPI.Reduce(lessLen, totalLessLen, MPI.SUM, 0, comm)
+
+# In process 0, print the total lessLen
+if rank == 0
+    println("Total lessLen: $(totalLessLen[1])")
+end
+##########################
+
+for i in 1:size-1
+    if rank == i
+        print("Process $rank received $(subA[i]) from process 0\n")
+    end
+end
+
+# Wait for all processes to finish
+MPI.Barrier(comm)
+
+
+MPI.Finalize()
