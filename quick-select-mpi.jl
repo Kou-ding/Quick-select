@@ -49,73 +49,81 @@ subA = divide_array(A, size-1)
 
 if rank == 0
     for i in 1:size-1
-        MPI.Isend(subA[i], i, i*10, comm)
+        MPI.Isend(subA[i], i, i, comm)
     end
 else
     for i in 1:size-1
         subA[i] = zeros(Int, length(subA[i]))
-        MPI.Irecv!(subA[i], 0, i*10, comm)
+        MPI.Irecv!(subA[i], 0, i, comm)
     end
 end
 
 # Wait for all processes to finish
 MPI.Barrier(comm)
 
-for rank in 1:size-1
+# Initialize the pivot
+pivot=zeros(Int,1)
+
+# Set the pivot to a random element of A in process 0 and send it to all other processes
+if rank == 0
+    #global pivot = [rand(A)]
+    global pivot = 10
+    for i in 1:size-1
+        MPI.Isend(pivot, i, i, comm)
+    end
+    println("Root pivot: $(pivot[1])")
+else
+    for i in 1:size-1
+        MPI.Irecv!(pivot, 0, i, comm)
+    end
+end
+
+# Wait for all processes to finish
+MPI.Barrier(comm)
+
+# Apply the sequential quick-select algorithm to each subarray
+if rank in 1:size-1
     while (true)
         # Set i and j each iteration of the while loop
         i = 1
         j = length(subA[rank])
-        pivot = 7
 
         # Divide the array into 2 sides
         while (i<j)
-            while ((subA[rank][i]<pivot) && (i<j))
+            while ((subA[rank][i]<pivot[1]) && (i<j))
                 i += 1
             end
-            while ((subA[rank][j]>=pivot) && (i<j))
+            while ((subA[rank][j]>=pivot[1]) && (i<j))
                 j -= 1
             end
             swap_elements!(subA[rank],i,j)
         end
 
         # Differentiate based on if the common index, i and j are on, is bigger or smaller than the pivot
-        if (subA[rank][j]<pivot)
-            pivot_position=j+1
-        elseif (subA[rank][j]>=pivot)
+        if (subA[rank][j]<pivot[1])
             pivot_position=j
+        elseif (subA[rank][j]>=pivot[1])
+            pivot_position=j-1
         end
-        
+    
         if (i==j)
-            global lessLen = pivot_position - 1
+            global lessLen = pivot_position
+            print("lessLen of process $rank: $(lessLen)\n")
             moreLen = length(subA[rank]) - lessLen
             break
         end
     end
 end
 
-##########################
 # Wait for all processes to finish
 MPI.Barrier(comm)
 
-totalLessLen = [0]
-# Reduce all lessLen values to totalLessLen in process 0
-MPI.Reduce(lessLen, totalLessLen, MPI.SUM, 0, comm)
-
-# In process 0, print the total lessLen
-if rank == 0
-    println("Total lessLen: $(totalLessLen[1])")
-end
-##########################
-
-for i in 1:size-1
-    if rank == i
-        print("Process $rank received $(subA[i]) from process 0\n")
-    end
+# Print the subarrays
+if rank in 1:size-1
+    print("Process $rank received $(subA[rank]) from process 0\n")
 end
 
 # Wait for all processes to finish
 MPI.Barrier(comm)
-
 
 MPI.Finalize()
