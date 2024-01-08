@@ -166,6 +166,9 @@ Then exit the julia terminal by typing ctr-D. Now, a good practice is to add mpi
 ```bash
 # if mpiexecjl is NOT in the path
 /home/user/julia/julia-1.9.4/bin/mpiexecjl -n 2 julia quick-select-mpi.jl
+# it might also be 
+/home/user/.julia/bin/mpiexecjl -n 2 julia quick-select-mpi.jl
+#depending on the installation. After installing julia will show the exact location.
 # if mpiexecjl is in the path
 mpiexecjl -n 2 julia quick-select-mpi.jl
 
@@ -180,4 +183,4 @@ External sources
 - Julia tutorials: https://julialang.org/learning/tutorials/
 - Multi-Threading: https://docs.julialang.org/en/v1/manual/multi-threading/
 - Introduction to Julia: https://www.youtube.com/watch?v=4igzy3bGVkQ&list=PLP8iPy9hna6SCcFv3FvY_qjAmtTsNYHQE
-- 
+- General consulting: ChatGPT & Copilot

@@ -34,7 +34,6 @@ function divide_array(A, n)
 end
 
 using MPI
-
 MPI.Init()
 
 comm = MPI.COMM_WORLD
@@ -43,9 +42,18 @@ size = MPI.Comm_size(comm)
 
 # Initialize the array
 init_array()
-
 # The array that is going to hold the subarrays of A
 subA = divide_array(A, size-1)
+
+if rank==0
+    # Prompt to find the value of the k-th element, considering the array is sorted
+    println("Pick a number out of $(length(A)):")
+    k = parse(Int64, readline())
+
+    # Store k inside another variable because we are going to be making changes to it
+    searching = k 
+end
+
 
 if rank == 0
     for i in 1:size-1
@@ -61,8 +69,9 @@ end
 # Wait for all processes to finish
 MPI.Barrier(comm)
 
-# Initialize the pivot
+# Initialize the pivot and lessLen
 pivot=zeros(Int,1)
+lessLen = 0
 
 # Set the pivot to a random element of A in process 0 and send it to all other processes
 if rank == 0
@@ -121,6 +130,15 @@ MPI.Barrier(comm)
 # Print the subarrays
 if rank in 1:size-1
     print("Process $rank received $(subA[rank]) from process 0\n")
+end
+
+# Gather all the lessLen from each process and add them together
+# format: MPI.Reduce(variables from processes to work on, operation, comm)
+total_lessLen=MPI.Reduce(lessLen, MPI.SUM, comm)
+
+# Now, total_lessLen in the root process (rank 0) holds the sum of all lessLen
+if rank == 0
+    println("Total lessLen: $total_lessLen")
 end
 
 # Wait for all processes to finish
