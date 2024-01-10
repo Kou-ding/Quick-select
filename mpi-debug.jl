@@ -104,7 +104,6 @@ end
 
 # Store k inside another variable because we are going to be making changes to it
 if rank==0
-    start_time = time()
     searching = kBuff[1]
     result=0 
 end
@@ -122,6 +121,7 @@ while (winCondition1Buff[1] != 1)
         for i in 1:size-1
             MPI.Isend(pivot, i, i, comm)
         end
+        println("Root pivot: $(pivot[1])")
     else
         for i in 1:size-1
             MPI.Irecv!(pivot, 0, i, comm)
@@ -162,6 +162,7 @@ while (winCondition1Buff[1] != 1)
         
             if (i==j)
                 global lessLen = pivot_position
+                print("lessLen of process $rank: $(lessLen)\n")
                 break
             end
         end
@@ -170,9 +171,19 @@ while (winCondition1Buff[1] != 1)
     # Wait for all processes to finish
     MPI.Barrier(comm)
 
+    # Print the subarrays
+    if rank in 1:size-1
+        print("Process $rank received $(subA[rank]) from process 0\n")
+    end
+
     # Gather all the lessLen from each process and add them together
     # format: MPI.Reduce(variables from processes to work on, operation, comm)
     total_lessLen=MPI.Reduce(lessLen, MPI.SUM, comm)
+    
+    # Now, total_lessLen in the root process (rank 0) holds the sum of all lessLen
+    if rank == 0
+        println("Total lessLen: $total_lessLen")
+    end
     
     # Wait for all processes to finish
     MPI.Barrier(comm)
@@ -190,6 +201,13 @@ while (winCondition1Buff[1] != 1)
         end
     end
 
+    # Wait for all processes to finish
+    MPI.Barrier(comm)
+
+    if rank in 0:size-1
+        print("k $rank: $(kBuff)\n")
+        print("total lessLen $rank: $(total_lessLenBuff)\n")
+    end
     # Wait for all processes to finish
     MPI.Barrier(comm)
 
@@ -227,6 +245,15 @@ while (winCondition1Buff[1] != 1)
 
     # Wait for all processes to finish
     MPI.Barrier(comm)
+    
+    # Print the subarrays
+    if rank in 1:size-1
+        print("Process $rank received $(subA[rank]) from process 0\n")
+        print("kBuff $rank is $(kBuff)\n")
+    end
+    
+    # Wait for all processes to finish
+    MPI.Barrier(comm)
 
     soleElementCheck=0
     if rank in 1:size-1
@@ -248,12 +275,16 @@ while (winCondition1Buff[1] != 1)
 
     # Wait for all processes to finish
     MPI.Barrier(comm)
+    
+    if rank in 0:size-1
+        print("winCondition1Buff $rank is $(winCondition1Buff)\n")
+    end
+
+    # Wait for all processes to finish
+    MPI.Barrier(comm)
 end
 
 if rank==0
-    end_time = time()
-    elapsed_time = end_time - start_time
-    print("\nElapsed time: $elapsed_time seconds\n")
     print("\nThe $searching-th element is:")
 end
 # Wait for all processes to finish

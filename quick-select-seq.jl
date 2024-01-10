@@ -81,4 +81,4 @@ elapsed_time = @elapsed begin
         end
     end
 end
-println("Elapsed time: ", elapsed_time)
+println("Elapsed time: $elapsed_time seconds")
