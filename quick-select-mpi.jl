@@ -113,12 +113,23 @@ end
 pivot=zeros(Int,1)
 lessLen = 0
 winCondition1Buff=[2]
+winCondition2Buff=[0]
+winCondition2=0
 
-while (winCondition1Buff[1] != 1)
+# winCondition1: If there is only one element left in the subarrays
+# winCondition2: If the elements equal to the pivot are equal to the total number of elements in the subarrays
+while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1]))
+    # Send a random pivot from each sub array to the root process
+    if rank in 1:size-1 && subA[rank] != []
+        global pivot = [rand(subA[rank])]
+        MPI.Isend(pivot, 0, rank, comm)
+    end
+
     # Set the pivot to a random element of A in process 0 and send it to all other processes
     if rank == 0
-        global pivot = [rand(A)]
-        #global pivot = 7
+        for i in 1:size-1
+            MPI.Irecv!(pivot, i, i, comm)
+        end
         for i in 1:size-1
             MPI.Isend(pivot, i, i, comm)
         end
@@ -135,6 +146,8 @@ while (winCondition1Buff[1] != 1)
     end
     # Wait for all processes to finish
     MPI.Barrier(comm)
+
+    global winCondition2=0
     # Apply the sequential quick-select algorithm to each subarray
     if rank in 1:size-1 && subA[rank] != []
         while (true)
@@ -148,6 +161,9 @@ while (winCondition1Buff[1] != 1)
                     i += 1
                 end
                 while ((subA[rank][j]>=pivot[1]) && (i<j))
+                    if (subA[rank][j]==pivot[1])
+                        global winCondition2 = winCondition2 + 1
+                    end
                     j -= 1
                 end
                 swap_elements!(subA[rank],i,j)
@@ -158,6 +174,7 @@ while (winCondition1Buff[1] != 1)
                 pivot_position=j
             elseif (subA[rank][j]>=pivot[1])
                 pivot_position=j-1
+                global winCondition2 = winCondition2 + 1
             end
         
             if (i==j)
@@ -167,6 +184,17 @@ while (winCondition1Buff[1] != 1)
         end
     end
 
+    total_equal_pivot=[MPI.Reduce(winCondition2, MPI.SUM, comm)]
+    if rank==0
+        global winCondition2Buff=total_equal_pivot
+        for i in 1:size-1
+            MPI.Isend(winCondition2Buff, i, i, comm)
+        end
+    else
+        for i in 1:size-1
+            MPI.Irecv!(winCondition2Buff, 0, i, comm)
+        end
+    end
     # Wait for all processes to finish
     MPI.Barrier(comm)
 
