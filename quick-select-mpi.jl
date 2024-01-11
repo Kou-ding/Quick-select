@@ -50,7 +50,7 @@ if rank == 0
 end
 
 # Wait for all processes to finish
-MPI.Barrier(comm)
+########################MPI.Barrier(comm)
 
 # Send the length of A to all other processes
 if rank == 0
@@ -64,7 +64,7 @@ else
     end
 end
 
-# Wait for all processes to finish
+# length_array is needed in the next iteration
 MPI.Barrier(comm)
 
 # Divide the array into subarrays and send them to all other processes
@@ -79,13 +79,18 @@ else
         A=zeros(Int,length_array[1])
         chunk_size = div(length_array[1], size-1)
         # Initialize the subarray
-        subA[rank] = A[(rank-1)*chunk_size+1 : rank*chunk_size]
+        if rank in 1:size-2
+            subA[rank] = A[(rank-1)*chunk_size+1 : rank*chunk_size]
+        end
+        if rank == size-1
+            subA[rank] = A[(rank-1)*chunk_size+1 : end]
+        end
         MPI.Irecv!(subA[rank], 0, rank, comm)
     end
 end
 
 # Wait for all processes to finish
-MPI.Barrier(comm)
+###########################MPI.Barrier(comm)
 
 # Prompt to find the value of the k-th element, considering the array is sorted
 # send k to all other processes
@@ -101,8 +106,11 @@ else
         MPI.Irecv!(kBuff, 0, i, comm)
     end
 end
+# kBuff is needed in the next iteration
+MPI.Barrier(comm)
 
 # Store k inside another variable because we are going to be making changes to it
+# Start the timer
 if rank==0
     start_time = time()
     searching = kBuff[1]
@@ -115,6 +123,7 @@ lessLen = 0
 winCondition1Buff=[2]
 winCondition2Buff=[0]
 winCondition2=0
+
 
 # winCondition1: If there is only one element left in the subarrays
 # winCondition2: If the elements equal to the pivot are equal to the total number of elements in the subarrays
@@ -139,13 +148,15 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
         end
     end
 
-    # Wait for all processes to finish
+    # pivot is needed in the next iteration
     MPI.Barrier(comm)
+
     if rank in 1:size-1 && subA[rank] == []
         global lessLen = 0
     end
+    
     # Wait for all processes to finish
-    MPI.Barrier(comm)
+    #################################MPI.Barrier(comm)
 
     global winCondition2=0
     # Apply the sequential quick-select algorithm to each subarray
@@ -174,7 +185,9 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
                 pivot_position=j
             elseif (subA[rank][j]>=pivot[1])
                 pivot_position=j-1
-                global winCondition2 = winCondition2 + 1
+                if (subA[rank][j]==pivot[1])
+                    global winCondition2 = winCondition2 + 1
+                end
             end
         
             if (i==j)
@@ -185,6 +198,7 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
     end
 
     total_equal_pivot=[MPI.Reduce(winCondition2, MPI.SUM, comm)]
+
     if rank==0
         global winCondition2Buff=total_equal_pivot
         for i in 1:size-1
@@ -195,18 +209,17 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
             MPI.Irecv!(winCondition2Buff, 0, i, comm)
         end
     end
+
     # Wait for all processes to finish
-    MPI.Barrier(comm)
+    MPI.Barrier(comm) # seems to be very important
 
     # Gather all the lessLen from each process and add them together
     # format: MPI.Reduce(variables from processes to work on, operation, comm)
     total_lessLen=MPI.Reduce(lessLen, MPI.SUM, comm)
-    
-    # Wait for all processes to finish
-    MPI.Barrier(comm)
 
     # Send the total_lessLen to all other processes
     total_lessLenBuff=[0]
+
     if rank==0
         global total_lessLenBuff=total_lessLen
         for i in 1:size-1
@@ -218,7 +231,7 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
         end
     end
 
-    # Wait for all processes to finish
+    # total_lessLenBuff is needed in the next iteration
     MPI.Barrier(comm)
 
     # Reduce the subarrays to the ones that are going to be used in the next iteration
@@ -243,7 +256,9 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
                 MPI.Irecv!(kBuff, 0, i, comm)
             end
         end
-        MPI.Barrier(comm)
+        # Wait for all processes to finish
+        #####################MPI.Barrier(comm)
+
         if rank in 1:size-1 && subA[rank] != []
             if lessLen == length(subA[rank])
                 subA[rank] = []
@@ -254,15 +269,17 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
     end
 
     # Wait for all processes to finish
-    MPI.Barrier(comm)
+    MPI.Barrier(comm) #seems to be very important
 
     soleElementCheck=0
     if rank in 1:size-1
         soleElementCheck=length(subA[rank])
     end
+
     winCondition1=MPI.Reduce(soleElementCheck, MPI.SUM, comm)
 
     winCondition1Buff=[0]
+
     if rank==0
         global winCondition1Buff=winCondition1
         for i in 1:size-1
@@ -274,25 +291,22 @@ while ((winCondition1Buff[1] != 1) && (winCondition2Buff[1]!=winCondition1Buff[1
         end
     end
 
-    # Wait for all processes to finish
+    # Sync before the next iteration of the while loop
     MPI.Barrier(comm)
 end
 
+# Stop the timer and print the elapsed time
 if rank==0
     end_time = time()
     elapsed_time = end_time - start_time
     print("\nElapsed time: $elapsed_time seconds\n")
     print("\nThe $searching-th element is:")
 end
-# Wait for all processes to finish
+# Barrier so that the processes don't print at the same time
 MPI.Barrier(comm)
-
 # Win condition 1: If there is only one element left in the subarrays
 if ((rank != 0) && (subA[rank] != []))
     print(" $(subA[rank][1])\n")
 end
-
-# Wait for all processes to finish
-MPI.Barrier(comm)
 
 MPI.Finalize()

@@ -112,18 +112,59 @@ This has been a quick visual representation of the program's steps.
 
 ## Quick select mpi
 In this algorithm we have to split the whole array into **n** number of sub arrays and scatter them, one sub array to each proccess. Then we will have to tweak the way we determine when we have reached the k-th element. This way involves seperating the subarrays again into two parts, one >= than the pivot and one < than the pivot but here we broadcast a pivot sampled from the whole array that all of the subarrays are going to compare against. Because the pivot might not appear in some sub arrays we dont keep a variable named pivot for each subarray. Instead we set our success condition to be either every subarray element is the same with every other subarray element or only one element remains in the entire array.  
-![sketch](/media/sketch-qs.jpg)
+<pre>
+Whole Array:
+   less(than pivot)      more(than pivot)
+o o o o o o o o o o o | ■ ■ ■ ■ ■ ■ ■ ■ ■ |
+
+Sub-Arrays:
+o o ■ ■ | o o o ■ | o ■ ■ ■ | o o ■ ■ | o o o ■ |
+
+total_less                     |total_more
+|ο o| |o o o| |o| |o o| |o o o|||■ ■| |■| |■ ■ ■| |■ ■| |■|
+
+if (total_less&gt;=k)
+|ο o| |o o o| |o| |o o| |o o o| <-keep
+
+if (total_less&lt;k)
+|■ ■| |■| |■ ■ ■| |■ ■| |■| <-keep
+k = k - total_less
+
+Repeat 🔄
+</pre>
 
 ## Times & Time Complexity
-Execution times mean, Array:
-|qs-easy|qs-seq|qs-mpi|qs-threads|
-|-------|------|------|----------|
+Execution times mean, Array: 1k, Computation: Locally
+|qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
+|-------|------|---------|---------|---------|----------|----------|
+|0.0105 |0.0242|0.358    |2.176    |4.526    |     ||
+|0.0104 |0.0248|0.364    |1.907    |3.746    |     ||
+|0.0102 |0.0241|0.374    |1.491    |3.286    |     ||
+|0.0112 |0.0243|0.363    |2.224    |4.706    |     ||
+|0.0109 |0.0244|0.359    |1.927    |4.145    |     ||
+|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
+|0.0106|0.02436|0.3636   |1.945    |4.0818   | |
+
+Execution times mean, Array: 1mil, Computation: Locally
+|qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
+|-------|------|------|----------|---------|----------|----------|
 |||||
 |||||
 |||||
 |||||
 |||||
-|Mean score|Mean score|Mean score|Mean score|
+|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
+|||||
+
+Execution times mean, Array: 1bil, Computation: Locally
+|qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
+|-------|------|------|----------|---------|----------|----------|
+|||||
+|||||
+|||||
+|||||
+|||||
+|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
 |||||
 
 #### Time complexity
@@ -136,10 +177,6 @@ Execution times mean, Array:
 - quick-select-mpi.jl
       - 
 
-- quick-select-threads.jl
-      - 
-
-
 ## Tutorial
 (Optional) Inside the julia terminal type the following commands to update Julia to the newest version.
 >to access julia terminal install julia and 
@@ -150,7 +187,10 @@ update_julia()
 ```
 
 First things first, you have to create a list (txt file) by executing:
-
+>note that the tests from the graphs were produced with the following entries:
+      -n=1.000, lowerLimit=1 upperLimit=1.000
+      -n=1.000.000, lowerLimit=1 upperLimit=1.000.000
+      -n=1.000.000.000, lowerLimit=1 upperLimit=1.000.000.000
 ```bash
 julia create_list.jl
 # this is going to prompt you to configure the number 
