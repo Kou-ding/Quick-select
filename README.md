@@ -20,7 +20,9 @@ println("The element number $k of the sorted array is: $(sorted_A[k])")
 
 This algorithm revolves around creating a random `pivot` point somewhere inside the array and using it to seperate the array into two parts. The first part of the array contains only elements that are smaller than the pivot point *symblized with 'o'* and the second part contains elements equal or bigger than the pivot point *symblized with '■'*. 
 
-<img src="media/quick-select.png" alt="two parts" width="400" height="300">
+<div style="text-align: center;">
+      <img src="media/quick-select.png" alt="two parts" width="400" height="300">
+</div>
 
 After having two pointers traverse the array, one from the start and one from the end, whenever they each come in contact with an element that should be on the opposite side the swap values and continue doing that until they have met each other. 
 <pre>
@@ -174,7 +176,9 @@ Execution times mean, Array: 100mil, Computation: Locally
 |Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
 |2.9006|32.5728|70.6352|40.7172|39.5186|45.6496|74.9598|
 
-![excel-graph](media/qs-graph.png)
+<div style="text-align: center;">
+      <img src="media/qs-graph.png" alt="excel-graph">
+</div>
 
 The results show than in all scenarios using MPI produces slower results. The higher the number of processes the slower the program is. However one anomaly sighted was the drop in time in the larger file variant upon which the program was tasked to run on. With 2 processes the time peaked then gradually reduced and only after assigning 20 processes did it rise back up to the same level as n=2.  
 
