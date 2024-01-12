@@ -172,7 +172,9 @@ Execution times mean, Array: 100mil, Computation: Locally
 |2.763|44.612|88.872|34.586|33.536|54.686|72.776|
 |Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
 |2.9006|32.5728|70.6352|40.7172|39.5186|45.6496|74.9598|
+
 ![excel-graph](media/qs-graph.png)
+
 #### Time complexity
 - quick-select-easy.jl
       - O(n log n) : The time complexity of sorting an array of length n is typically O(n log n) for efficient sorting algorithms like quicksort, mergesort, or heapsort.
