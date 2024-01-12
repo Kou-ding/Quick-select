@@ -136,9 +136,9 @@ A quick note: The original code "quick-select-mpi.jl" started by initializing an
 
 ## Times & Time Complexity
 - Computer specifications:
-      - CPU: Intel Core i5 4460 @ 3.20GHz
-      - GPU: 4096MB ATI AMD Radeon R9 380 Series (MSI)
-      - RAM: 16.0GB Dual-Channel DDR3 @ 789MHz 
+  - CPU: Intel Core i5 4460 @ 3.20GHz
+  - GPU: 4096MB ATI AMD Radeon R9 380 Series (MSI)
+  - RAM: 16.0GB Dual-Channel DDR3 @ 789MHz 
 
 Execution times mean, Array: 1k, Computation: Locally
 |qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
@@ -174,6 +174,7 @@ Execution times mean, Array: 100mil, Computation: Locally
 |2.9006|32.5728|70.6352|40.7172|39.5186|45.6496|74.9598|
 
 ![excel-graph](media/qs-graph.png)
+The results show than in all scenarios using MPI produces slower results. The higher the number of processes the slower the program is. However one anomaly sighted was the drop in time in the larger file variant upon which the program was tasked to run on. With 2 processes the time peaked then gradually reduced and only after assigning 20 processes did it rise back up to the same level as n=2.  
 
 #### Time complexity
 - quick-select-easy.jl
@@ -195,10 +196,13 @@ update_julia()
 ```
 
 First things first, you have to create a list (txt file) by executing:
+
 >note that the tests from the graphs were produced with the following entries:
-      -n=1.000, lowerLimit=1 upperLimit=1.000
-      -n=1.000.000, lowerLimit=1 upperLimit=1.000.000
-      -n=100.000.000, lowerLimit=1 upperLimit=100.000.000
+
+- n=1.000, lowerLimit=1 upperLimit=1.000
+- n=1.000.000, lowerLimit=1 upperLimit=1.000.000
+- n=100.000.000, lowerLimit=1 upperLimit=100.000.000
+
 ```bash
 julia create_list.jl
 # this is going to prompt you to configure the number 
@@ -235,8 +239,14 @@ mpiexecjl -n 2 julia tutorials/no-main-array.jl
 
 The number that comes after -n is the number of ranks and you are able to configure it freely when calling the program.
 
->if at any time you have any questions feel free to message me **Ü**
+#### tutorials folder contains:
+- detect-file-lines.jl : A small julia program that counts how many lines a txt file has
+- mpi-debug.jl : This program is quick-select-mpi.jl but with prints to make debugging easier.
+- mpi-send.jl : A comprehensive example of how to send and receive information using MPI.
+- read-list.jl : A program to retreive data from specific lines in a txt file
+- no-main-array.jl : This program is quick-select-mpi.jl but with a more direct approach having the sub-processes themselves find the part from the txt file they are going to work on. After a certain file size it becomes necessary.
 
+>if at any time you have any questions feel free to message me **Ü**
 
 External sources
 ----------------
