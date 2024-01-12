@@ -25,7 +25,6 @@ finally
     # Make sure to close the file when you're done with it
     close(file)
 end
-print("number of lines[$rank]: $num_lines\n")
 
 MPI.Barrier(comm)
 
@@ -277,13 +276,14 @@ if rank==0
     end_time = time()
     elapsed_time = end_time - start_time
     print("\nElapsed time: $elapsed_time seconds\n")
-    print("\nThe $searching-th element is:")
+    print("\nThe $searching-th element is...\n")
 end
 # Barrier so that the processes don't print at the same time
 MPI.Barrier(comm)
 # Win condition 1: If there is only one element left in the subarrays
 if ((rank != 0) && (subA[rank] != []))
-    print(" $(subA[rank][1])\n")
+    print("According to rank $rank: $(subA[rank][1])\n")
+    print("Rank $rank got a cookie!\n")
 end
 
 MPI.Finalize()

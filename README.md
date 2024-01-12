@@ -132,50 +132,56 @@ k = k - total_less
 
 Repeat 🔄
 </pre>
+A quick note: The original code "quick-select-mpi.jl" started by initializing an array and then sending parts of it to the other processes. For the last stage of testing this method didn't work anymore so I created "tutorials/no-main-array.jl" which avoids creating a main array. It points at specific lines in the txt file and then creates the sub-arrays of the processes 1 to size-1 directly.
 
 ## Times & Time Complexity
+- Computer specifications:
+      - CPU: Intel Core i5 4460 @ 3.20GHz
+      - GPU: 4096MB ATI AMD Radeon R9 380 Series (MSI)
+      - RAM: 16.0GB Dual-Channel DDR3 @ 789MHz 
+
 Execution times mean, Array: 1k, Computation: Locally
 |qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
 |-------|------|---------|---------|---------|----------|----------|
-|0.0105 |0.0242|0.358    |2.176    |4.526    |     ||
-|0.0104 |0.0248|0.364    |1.907    |3.746    |     ||
-|0.0102 |0.0241|0.374    |1.491    |3.286    |     ||
-|0.0112 |0.0243|0.363    |2.224    |4.706    |     ||
-|0.0109 |0.0244|0.359    |1.927    |4.145    |     ||
+|0.0105 |0.0242|0.358    |2.176    |4.526    |6.071     |41.746    |
+|0.0104 |0.0248|0.364    |1.907    |3.746    |8.606     |47.576    |
+|0.0102 |0.0241|0.374    |1.491    |3.286    |10.146    |42.316    |
+|0.0112 |0.0243|0.363    |2.224    |4.706    |9.775     |10.699    |
+|0.0109 |0.0244|0.359    |1.927    |4.145    |10.386    |70.076    |
 |Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
-|0.0106|0.02436|0.3636   |1.945    |4.0818   | |
+|0.0106|0.02436|0.3636   |1.945    |4.0818   |8.9968    |42.4826   |
 
 Execution times mean, Array: 1mil, Computation: Locally
 |qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
 |-------|------|------|----------|---------|----------|----------|
-|||||
-|||||
-|||||
-|||||
-|||||
+|0.0283 |0.189 |1.165 |5.276     |7.806    |12.166    |38.136    |
+|0.029  |0.333 |1.408 |4.536     |10.664   |13.576    |39.265    |
+|0.0268 |0.18  |1.212 |3.524     |6.846    |9.146     |41.478    |
+|0.0275 |0.474 |1.579 |4.666     |13.223   |10.468    |39.426    |
+|0.0269 |0.348 |1.259 |3.619     |9.146    |15.554    |41.204    |
 |Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
-|||||
+|0.0277 |0.3048|1.3246|4.3242    |9.537    |12.182    |39.9018   |
 
-Execution times mean, Array: 1bil, Computation: Locally
+Execution times mean, Array: 100mil, Computation: Locally
 |qs-easy|qs-seq|qs-mpi-n2|qs-mpi-n5|qs-mpi-n7|qs-mpi-n10|qs-mpi-n20|
 |-------|------|------|----------|---------|----------|----------|
-|||||
-|||||
-|||||
-|||||
-|||||
+|2.831|25.225|53.694|69.163|31.895|32.436|62.386|
+|2.883|29.283|68.691|30.213|36.84|59.396|70.006|
+|3.049|22.371|70.695|36.893|43.216|37.494|74.635|
+|2.977|41.373|71.224|32.731|52.106|44.236|94.996|
+|2.763|44.612|88.872|34.586|33.536|54.686|72.776|
 |Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|Mean score|
-|||||
-
+|2.9006|32.5728|70.6352|40.7172|39.5186|45.6496|74.9598|
+![excel-graph](media/qs-graph.png)
 #### Time complexity
 - quick-select-easy.jl
-      - 
+      - O(n log n) : The time complexity of sorting an array of length n is typically O(n log n) for efficient sorting algorithms like quicksort, mergesort, or heapsort.
 
 - quick-select-seq.jl
-      - 
+      - O(n)'average' : The time complexity of the sequential quickselect algorithm is O(n^2) in the worst case, but on average, it is O(n).
 
 - quick-select-mpi.jl
-      - 
+      - The introduction of MPI (Message Passing Interface) in a program does not fundamentally alter the time complexity of the underlying algorithm.
 
 ## Tutorial
 (Optional) Inside the julia terminal type the following commands to update Julia to the newest version.
@@ -190,7 +196,7 @@ First things first, you have to create a list (txt file) by executing:
 >note that the tests from the graphs were produced with the following entries:
       -n=1.000, lowerLimit=1 upperLimit=1.000
       -n=1.000.000, lowerLimit=1 upperLimit=1.000.000
-      -n=1.000.000.000, lowerLimit=1 upperLimit=1.000.000.000
+      -n=100.000.000, lowerLimit=1 upperLimit=100.000.000
 ```bash
 julia create_list.jl
 # this is going to prompt you to configure the number 
@@ -217,11 +223,14 @@ Then exit the julia terminal by typing ctr-D. Now, a good practice is to add mpi
 /home/user/julia/julia-1.9.4/bin/mpiexecjl -n 2 julia quick-select-mpi.jl
 # it might also be 
 /home/user/.julia/bin/mpiexecjl -n 2 julia quick-select-mpi.jl
-#depending on the installation. After installing julia will show the exact location.
+# depending on the installation. After installing julia will show the exact location.
 # if mpiexecjl is in the path
 mpiexecjl -n 2 julia quick-select-mpi.jl
-
+# Note: for the 100mil txt file please use the following jl file which creates the sub-arrays direclty.
+mpiexecjl -n 2 julia tutorials/no-main-array.jl
+# quick-select-mpi.jl doesn't work for very large files
 ```
+
 The number that comes after -n is the number of ranks and you are able to configure it freely when calling the program.
 
 >if at any time you have any questions feel free to message me **Ü**
